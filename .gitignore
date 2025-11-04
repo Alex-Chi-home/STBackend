@@ -10,6 +10,10 @@ package-lock.json
 .env.development
 .env.production
 
+# Ngrok
+ngrok.yml
+temp_ngrok.json
+
 # Docker
 docker-compose.override.yml
 *.log

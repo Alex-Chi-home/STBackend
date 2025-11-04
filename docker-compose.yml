@@ -52,6 +52,26 @@ services:
       retries: 10
       start_period: 60s
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: always
+    command:
+      - "start"
+      - "--all"
+      - "--config"
+      - "/etc/ngrok.yml"
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml
+    ports:
+      - "4040:4040"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - app-network
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+
 networks:
   app-network:
     driver: bridge
