@@ -14,7 +14,7 @@ services:
       MYSQL_HOST: mysqlDatabase
       MYSQL_PORT: "3306"
       MYSQL_USER: ${MYSQL_USER:-root}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       DATABASE_NAME: ${DATABASE_NAME}
     networks:
       - app-network
@@ -36,10 +36,8 @@ services:
   mysqlDatabase:
     image: mysql:9.3.0
     restart: always
-    env_file:
-      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DATABASE_NAME}
     volumes:
       - mysql_data:/var/lib/mysql
