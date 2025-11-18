@@ -61,7 +61,7 @@ app.use((req, res, next) => {
   next();
 });
 
-console.log("test 1");
+console.log("test !!!!!!!!!");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);

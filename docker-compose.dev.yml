@@ -1,0 +1,81 @@
+services:
+  api:
+    build:
+      context: ./api
+      target: development
+    restart: always
+    ports:
+      - "5555:5555"
+    depends_on:
+      mysqlDatabase:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      MYSQL_HOST: mysqlDatabase
+      MYSQL_PORT: "3306"
+      MYSQL_USER: ${MYSQL_USER:-root}
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
+    volumes:
+      - ./api/src:/app/src
+      - ./api/tsconfig.json:/app/tsconfig.json
+      - ./api/package.json:/app/package.json
+      - /app/node_modules
+    networks:
+      - app-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:5555/api/auth/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    develop:
+      watch:
+        # Синхронизация исходного кода TypeScript
+        - action: sync
+          path: ./api/src
+          target: /app/src
+          ignore:
+            - node_modules/
+        # Перезапуск при изменении package.json
+        - action: rebuild
+          path: ./api/package.json
+        # Синхронизация конфигурационных файлов
+        - action: sync+restart
+          path: ./api/tsconfig.json
+          target: /app/tsconfig.json
+
+  mysqlDatabase:
+    image: mysql:9.3.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_NAME}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+

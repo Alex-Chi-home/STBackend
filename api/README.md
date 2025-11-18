@@ -1,23 +1,28 @@
-Social Network API
-A production-ready Express.js backend API for a social network with Telegram-like chat functionality.
-Setup
+# Docker Compose Watch - Руководство
 
-Clone the repository:
-git clone <repository-url>
-cd social-network-api
+## 🚀 Быстрый старт
 
-Install dependencies:
-npm install
+### Режим разработки с автоматическим обновлением
 
-Create a .env file based on .env.example and fill in your configuration:
-cp .env.example .env
 
-Set up MySQL database and update .env with connection details.
+#### 1. **Docker Compose Watch **
 
-Run the application:
+```bash
+docker compose -f docker-compose.dev.yml watch
+```
 
-Development: npm run dev
-Production: npm run build && npm start
+#### 2. **Обычный режим разработки**
+
+```bash
+
+docker compose -f docker-compose.dev.yml up
+```
+
+#### 3. **Production режим**
+
+```bash
+
+docker compose up -d
 
 API Endpoints
 

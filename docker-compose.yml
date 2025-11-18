@@ -10,7 +10,7 @@ services:
     env_file:
       - .env
     environment:
-      NODE_ENV: production
+      NODE_ENV: ${NODE_ENV}
       MYSQL_HOST: mysqlDatabase
       MYSQL_PORT: "3306"
       MYSQL_USER: ${MYSQL_USER:-root}
@@ -32,6 +32,18 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    develop:
+      watch:
+        - action: sync
+          path: ./api/src
+          target: /app/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./api/package.json
+        - action: sync+restart
+          path: ./api/tsconfig.json
+          target: /app/tsconfig.json
 
   mysqlDatabase:
     image: mysql:9.3.0

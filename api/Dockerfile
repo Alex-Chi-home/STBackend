@@ -25,3 +25,18 @@ COPY --from=builder /app/package*.json ./
 COPY .env* ./
 
 CMD [ "npm", "start" ]
+
+# Development stage
+FROM node:alpine AS development
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . ./
+
+EXPOSE 5555
+
+CMD [ "npm", "run", "dev" ]
