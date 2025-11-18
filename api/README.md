@@ -18,6 +18,16 @@ docker compose -f docker-compose.dev.yml watch
 docker compose -f docker-compose.dev.yml up
 ```
 
+## Adminer - подключение к БД
+
+1. Откройте http://localhost:8080
+2. Заполните форму:
+   - **Сервер**: `mysqlDatabase`
+   - **Пользователь**: `root`
+   - **Пароль**: из `.env` → `MYSQL_ROOT_PASSWORD`
+   - **База данных**: из `.env` → `DATABASE_NAME`
+   
+
 #### 3. **Production режим**
 
 ```bash
