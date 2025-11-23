@@ -64,7 +64,7 @@ app.use((req, res, next) => {
   next();
 });
 
-console.log("test !!!", process.env.NODE_ENV);
+console.log("node env", process.env.NODE_ENV);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);

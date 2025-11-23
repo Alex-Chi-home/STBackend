@@ -49,7 +49,6 @@ export class AuthController {
         path: "/",
       };
 
-      console.log("🍪 Setting cookie with options:", cookieOptions);
       res.cookie("jwt", token, cookieOptions);
 
       res.json({
