@@ -25,14 +25,20 @@ const allowedOrigins = [
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
+    console.log("🔍 CORS Check - Origin:", origin);
+    console.log("🔍 Allowed origins:", allowedOrigins);
+
+    if (!origin) {
+      console.log("✅ No origin (same-site request)");
+      return callback(null, true);
+    }
 
     if (allowedOrigins.indexOf(origin) !== -1) {
-      console.log("ORIGIN ALLOWED +");
+      console.log("✅ ORIGIN ALLOWED +");
       callback(null, true);
       return;
     }
-    console.log("ORIGIN NOT ALLOWED --");
+    console.log("❌ ORIGIN NOT ALLOWED --");
     logger.warn(`CORS blocked request from origin: ${origin}`);
     callback(new Error("Not allowed by CORS"));
   },
