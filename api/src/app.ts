@@ -20,6 +20,7 @@ const allowedOrigins = [
   process.env.NGROK_URL,
   "http://localhost:3000",
   "http://localhost:5173",
+  "https://simple-telegram-peach.vercel.app",
 ].filter(Boolean);
 
 const corsOptions: CorsOptions = {
