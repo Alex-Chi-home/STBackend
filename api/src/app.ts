@@ -40,12 +40,17 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    exposedHeaders: ["Content-Type"],
     maxAge: 86400,
   })
 );
 
 app.use(express.json());
 app.use(cookieParser());
+
+// Handle preflight requests
+app.options("*", cors());
+
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
