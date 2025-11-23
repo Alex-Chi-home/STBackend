@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import helmet from "helmet";
-import cors, { CorsOptions } from "cors";
+import cors from "cors";
 import rateLimit from "express-rate-limit";
 import { errorMiddleware } from "./middleware/errorMiddleware";
 import authRoutes from "./routes/authRoutes";
@@ -20,68 +20,29 @@ const allowedOrigins = [
   process.env.NGROK_URL,
   "http://localhost:3000",
   "http://localhost:5173",
-  "https://simple-telegram-peach.vercel.app",
 ].filter(Boolean);
 
-const corsOptions: CorsOptions = {
-  origin: (origin, callback) => {
-    console.log("🔍 CORS Check - Origin:", origin);
-    console.log("🔍 Allowed origins:", allowedOrigins);
-
-    if (!origin) {
-      console.log("✅ No origin (same-site request)");
-      return callback(null, true);
-    }
-
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      console.log("✅ ORIGIN ALLOWED +");
-      callback(null, true);
-      return;
-    }
-    console.log("❌ ORIGIN NOT ALLOWED --");
-    logger.warn(`CORS blocked request from origin: ${origin}`);
-    callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  exposedHeaders: ["Content-Type"],
-  maxAge: 86400,
-};
-
+app.use(helmet());
 app.use(
-  helmet({
-    crossOriginResourcePolicy: false,
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        console.log("ORIGIN ALLOWED +");
+        callback(null, true);
+        return;
+      }
+      console.log("ORIGIN NOT ALLOWED --");
+      logger.warn(`CORS blocked request from origin: ${origin}`);
+      callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
   })
 );
 
-// Fix ngrok CORS issue - remove ngrok headers and apply our CORS
-app.use((req, res, next) => {
-  const origin = req.get("origin");
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-    );
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization"
-    );
-    res.setHeader("Access-Control-Expose-Headers", "Content-Type");
-  }
-  next();
-});
-
-app.use(cors(corsOptions));
-
 app.use(express.json());
 app.use(cookieParser());
-
-// Handle preflight requests with same CORS config
-app.options("*", cors(corsOptions));
-
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -95,7 +56,7 @@ app.use((req, res, next) => {
   next();
 });
 
-console.log("test changed", process.env.NODE_ENV);
+console.log("test !!!", process.env.NODE_ENV);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
