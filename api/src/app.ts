@@ -32,13 +32,22 @@ app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
+      if (!origin) {
+        console.log("✅ CORS: No origin (same-origin request)");
+        return callback(null, true);
+      }
+
+      console.log(`🔍 CORS Check for origin: ${origin}`);
+      console.log(`   Allowed origins: ${allowedOrigins.join(", ")}`);
 
       if (allowedOrigins.indexOf(origin) !== -1) {
+        console.log(`   ✅ Origin allowed (in list)`);
         callback(null, true);
       } else if (isVercelPreviewUrl(origin)) {
+        console.log(`   ✅ Origin allowed (Vercel preview)`);
         callback(null, true);
       } else {
+        console.log(`   ❌ Origin blocked`);
         logger.warn(`CORS blocked request from origin: ${origin}`);
         callback(new Error("Not allowed by CORS"));
       }

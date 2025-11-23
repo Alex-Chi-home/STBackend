@@ -14,13 +14,16 @@ export class AuthController {
         password
       );
 
-      res.cookie("jwt", token, {
+      const cookieOptions: CookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: this.TWO_DAYS,
         path: "/",
-      });
+      };
+
+      console.log("🍪 Setting cookie (register) with options:", cookieOptions);
+      res.cookie("jwt", token, cookieOptions);
 
       res.status(201).json({
         status: "success",
