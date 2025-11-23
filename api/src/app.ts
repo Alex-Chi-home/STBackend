@@ -37,7 +37,10 @@ app.use(
     //   logger.warn(`CORS blocked request from origin: ${origin}`);
     //   callback(new Error("Not allowed by CORS"));
     // },
-    origin: true,
+    origin: (origin, callback) => {
+      // Разрешаем любой origin (включая ngrok и Vercel) — просто отражаем его обратно
+      callback(null, origin);
+    },
     credentials: true,
   })
 );
