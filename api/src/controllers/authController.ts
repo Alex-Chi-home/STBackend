@@ -3,6 +3,7 @@ import { AuthService } from "../services/authService";
 
 export class AuthController {
   private authService = new AuthService();
+  TWO_DAYS = 2 * 24 * 60 * 60 * 1000;
 
   async register(req: Request, res: Response, next: NextFunction) {
     try {
@@ -19,7 +20,7 @@ export class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 3600 * 1000,
+        maxAge: this.TWO_DAYS,
         path: "/",
         domain,
       });
@@ -46,7 +47,7 @@ export class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 3600 * 1000,
+        maxAge: this.TWO_DAYS,
         path: "/",
         domain,
       });
