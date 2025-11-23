@@ -22,34 +22,37 @@ const allowedOrigins = [
   "http://localhost:5173",
 ].filter(Boolean);
 
-app.use(helmet());
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
+const corsOptions = {
+  origin: (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void
+  ) => {
+    if (!origin) return callback(null, true);
 
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        console.log("ORIGIN ALLOWED +");
-        callback(null, true);
-        return;
-      }
-      console.log("ORIGIN NOT ALLOWED --");
-      logger.warn(`CORS blocked request from origin: ${origin}`);
-      callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    exposedHeaders: ["Content-Type"],
-    maxAge: 86400,
-  })
-);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log("ORIGIN ALLOWED +");
+      callback(null, true);
+      return;
+    }
+    console.log("ORIGIN NOT ALLOWED --");
+    logger.warn(`CORS blocked request from origin: ${origin}`);
+    callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  exposedHeaders: ["Content-Type"],
+  maxAge: 86400,
+};
+
+app.use(helmet());
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
 
-// Handle preflight requests
-app.options("*", cors());
+// Handle preflight requests with same CORS config
+app.options("*", cors(corsOptions));
 
 app.use(
   rateLimit({
