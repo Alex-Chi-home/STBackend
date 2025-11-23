@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import helmet from "helmet";
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import rateLimit from "express-rate-limit";
 import { errorMiddleware } from "./middleware/errorMiddleware";
 import authRoutes from "./routes/authRoutes";
@@ -22,11 +22,8 @@ const allowedOrigins = [
   "http://localhost:5173",
 ].filter(Boolean);
 
-const corsOptions = {
-  origin: (
-    origin: string | undefined,
-    callback: (err: Error | null, allow?: boolean) => void
-  ) => {
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.indexOf(origin) !== -1) {
