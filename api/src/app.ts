@@ -25,18 +25,19 @@ const allowedOrigins = [
 app.use(helmet());
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
+    // origin: (origin, callback) => {
+    //   if (!origin) return callback(null, true);
 
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        console.log("ORIGIN ALLOWED +");
-        callback(null, true);
-        return;
-      }
-      console.log("ORIGIN NOT ALLOWED --");
-      logger.warn(`CORS blocked request from origin: ${origin}`);
-      callback(new Error("Not allowed by CORS"));
-    },
+    //   if (allowedOrigins.indexOf(origin) !== -1) {
+    //     console.log("ORIGIN ALLOWED +");
+    //     callback(null, true);
+    //     return;
+    //   }
+    //   console.log("ORIGIN NOT ALLOWED --");
+    //   logger.warn(`CORS blocked request from origin: ${origin}`);
+    //   callback(new Error("Not allowed by CORS"));
+    // },
+    origin: true,
     credentials: true,
   })
 );
