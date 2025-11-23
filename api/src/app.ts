@@ -42,7 +42,11 @@ const corsOptions: CorsOptions = {
   maxAge: 86400,
 };
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
 app.use(cors(corsOptions));
 
 app.use(express.json());
@@ -64,7 +68,7 @@ app.use((req, res, next) => {
   next();
 });
 
-console.log("test", process.env.NODE_ENV);
+console.log("test changed", process.env.NODE_ENV);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
