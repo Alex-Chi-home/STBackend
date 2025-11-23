@@ -7,8 +7,6 @@ export class AuthController {
 
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const domain = req.headers.host?.split(":")[0] || "";
-
       const { username, email, password } = req.body;
       const { token, id } = await this.authService.register(
         username,
@@ -19,10 +17,9 @@ export class AuthController {
       res.cookie("jwt", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: this.TWO_DAYS,
         path: "/",
-        domain,
       });
 
       res.status(201).json({
@@ -36,7 +33,6 @@ export class AuthController {
 
   async login(req: Request, res: Response, next: NextFunction) {
     try {
-      const domain = req.headers.host?.split(":")[0] || "";
       const { email, password } = req.body;
       const { username, token, id } = await this.authService.login(
         email,
@@ -46,10 +42,9 @@ export class AuthController {
       res.cookie("jwt", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: this.TWO_DAYS,
         path: "/",
-        domain,
       });
 
       res.json({
