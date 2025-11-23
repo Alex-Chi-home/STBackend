@@ -39,7 +39,7 @@ app.use(
     // },
     origin: (origin, callback) => {
       // Разрешаем любой origin (включая ngrok и Vercel) — просто отражаем его обратно
-      callback(null, "http://localhost:3000");
+      callback(null, "https://simple-telegram-peach.vercel.app/");
     },
     credentials: true,
   })
