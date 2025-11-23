@@ -7,6 +7,20 @@ export const authMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
+  console.log("🔐 Auth Middleware Check:");
+  console.log("  URL:", req.originalUrl);
+  console.log(
+    "  Authorization header:",
+    req.headers.authorization ? "✅ Present" : "❌ Missing"
+  );
+  console.log(
+    "  Cookies:",
+    Object.keys(req.cookies).length > 0
+      ? `✅ ${Object.keys(req.cookies).join(", ")}`
+      : "❌ No cookies"
+  );
+  console.log("  Cookie jwt:", req.cookies.jwt ? "✅ Present" : "❌ Missing");
+
   // Check Authorization header first
   let token = req.headers.authorization?.startsWith("Bearer ")
     ? req.headers.authorization.split(" ")[1]
@@ -17,13 +31,14 @@ export const authMiddleware = (
   }
   // Fallback to cookie
   if (!token && req.cookies.jwt) {
+    console.log("  ✅ Using token from cookie");
     token = req.cookies.jwt;
   }
 
   if (!token) {
     console.log("🔴 No token found!");
-    console.log("Headers:", req.headers);
-    console.log("Cookies:", req.cookies);
+    console.log("  Full headers:", JSON.stringify(req.headers, null, 2));
+    console.log("  Full cookies:", JSON.stringify(req.cookies, null, 2));
     throw new AppError("Authorization token missing", 401);
   }
 
@@ -32,8 +47,10 @@ export const authMiddleware = (
       userId: number;
     };
     req.user = { id: decoded.userId };
+    console.log("  ✅ Token verified for user:", decoded.userId);
     next();
   } catch (err) {
+    console.log("  ❌ Token verification failed:", err);
     throw new AppError("Invalid or expired token", 401);
   }
 };
