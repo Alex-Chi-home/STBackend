@@ -38,6 +38,9 @@ app.use(
       callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    maxAge: 86400,
   })
 );
 
@@ -56,7 +59,7 @@ app.use((req, res, next) => {
   next();
 });
 
-console.log("test !!!", process.env.NODE_ENV);
+console.log("test", process.env.NODE_ENV);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
