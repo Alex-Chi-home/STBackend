@@ -37,9 +37,13 @@ app.use(
     //   logger.warn(`CORS blocked request from origin: ${origin}`);
     //   callback(new Error("Not allowed by CORS"));
     // },
+    // origin: (origin, callback) => {
+    //   console.log(origin, "origin");
+    //   callback(null, "https://simple-telegram-peach.vercel.app");
+    // },
     origin: (origin, callback) => {
-      // Разрешаем любой origin (включая ngrok и Vercel) — просто отражаем его обратно
-      callback(null, "https://simple-telegram-peach.vercel.app");
+      console.log(origin, "origin");
+      callback(null, origin);
     },
     credentials: true,
   })
