@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, CookieOptions } from "express";
 import { AuthService } from "../services/authService";
 
 export class AuthController {
@@ -39,13 +39,16 @@ export class AuthController {
         password
       );
 
-      res.cookie("jwt", token, {
+      const cookieOptions: CookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: this.TWO_DAYS,
         path: "/",
-      });
+      };
+
+      console.log("🍪 Setting cookie with options:", cookieOptions);
+      res.cookie("jwt", token, cookieOptions);
 
       res.json({
         status: "success",

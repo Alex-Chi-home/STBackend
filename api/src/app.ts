@@ -44,6 +44,9 @@ app.use(
       }
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    maxAge: 86400,
   })
 );
 
@@ -62,7 +65,7 @@ app.use((req, res, next) => {
   next();
 });
 
-console.log("test qwe");
+console.log("test qwe !");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);

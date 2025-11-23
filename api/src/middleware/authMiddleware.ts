@@ -12,8 +12,8 @@ export const authMiddleware = (
     ? req.headers.authorization.split(" ")[1]
     : null;
 
-  if(!token && req.headers.authorization?.startsWith("jwt=")){
-    token = req.headers.authorization.split("jwt=")[1]
+  if (!token && req.headers.authorization?.startsWith("jwt=")) {
+    token = req.headers.authorization.split("jwt=")[1];
   }
   // Fallback to cookie
   if (!token && req.cookies.jwt) {
@@ -21,6 +21,9 @@ export const authMiddleware = (
   }
 
   if (!token) {
+    console.log("🔴 No token found!");
+    console.log("Headers:", req.headers);
+    console.log("Cookies:", req.cookies);
     throw new AppError("Authorization token missing", 401);
   }
 
