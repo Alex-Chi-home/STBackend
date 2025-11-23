@@ -17,45 +17,27 @@ const app = express();
 
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:3000",
-  process.env.FRONTEND_URL_PREVIEW,
-  process.env.FRONTEND_URL_SIMPLE,
   process.env.NGROK_URL,
   "http://localhost:3000",
   "http://localhost:5173",
 ].filter(Boolean);
 
-const isVercelPreviewUrl = (origin: string): boolean => {
-  return origin.includes(".vercel.app");
-};
-
 app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) {
-        console.log("✅ CORS: No origin (same-origin request)");
-        return callback(null, true);
-      }
-
-      console.log(`🔍 CORS Check for origin: ${origin}`);
-      console.log(`   Allowed origins: ${allowedOrigins.join(", ")}`);
+      if (!origin) return callback(null, true);
 
       if (allowedOrigins.indexOf(origin) !== -1) {
-        console.log(`   ✅ Origin allowed (in list)`);
+        console.log("ORIGIN ALLOWED +");
         callback(null, true);
-      } else if (isVercelPreviewUrl(origin)) {
-        console.log(`   ✅ Origin allowed (Vercel preview)`);
-        callback(null, true);
-      } else {
-        console.log(`   ❌ Origin blocked`);
-        logger.warn(`CORS blocked request from origin: ${origin}`);
-        callback(new Error("Not allowed by CORS"));
+        return;
       }
+      console.log("ORIGIN NOT ALLOWED --");
+      logger.warn(`CORS blocked request from origin: ${origin}`);
+      callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    maxAge: 86400,
   })
 );
 
@@ -74,7 +56,7 @@ app.use((req, res, next) => {
   next();
 });
 
-console.log("test qwe !");
+console.log("test !!!", process.env.NODE_ENV);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);

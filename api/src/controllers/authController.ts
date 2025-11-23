@@ -22,7 +22,6 @@ export class AuthController {
         path: "/",
       };
 
-      console.log("🍪 Setting cookie (register) with options:", cookieOptions);
       res.cookie("jwt", token, cookieOptions);
 
       res.status(201).json({
