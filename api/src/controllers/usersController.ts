@@ -11,6 +11,7 @@ export class UsersController {
       if (!user) {
         throw new AppError("User not found", 403);
       }
+      console.log('USER REQUEST')
       res.header("Access-Control-Allow-Origin", 'https://simple-telegram-peach.vercel.app');
       res.header("Access-Control-Allow-Credentials", "true");
       res.json({ status: "success", data: user });
