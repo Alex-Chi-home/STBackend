@@ -22,7 +22,7 @@ const allowedOrigins = [
   "http://localhost:5173",
 ].filter(Boolean);
 
-app.set('trust proxy', 1);
+app.set('trust proxy', true);
 
 app.use(helmet());
 app.use(
