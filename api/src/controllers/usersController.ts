@@ -7,13 +7,11 @@ export class UsersController {
 
   async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
+      console.log('get user direct !!!')
       const user = await this.usersService.getUsers(req.user!.id);
       if (!user) {
         throw new AppError("User not found", 403);
       }
-      console.log('USER REQUEST')
-      res.header("Access-Control-Allow-Origin", 'https://simple-telegram-peach.vercel.app');
-      res.header("Access-Control-Allow-Credentials", "true");
       res.json({ status: "success", data: user });
     } catch (error) {
       next(error);
