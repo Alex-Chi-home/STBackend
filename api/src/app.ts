@@ -43,10 +43,7 @@ app.use(
     //   console.log(origin, "origin");
     //   callback(null, "https://simple-telegram-peach.vercel.app");
     // },
-    origin: (origin, callback) => {
-      console.log(origin, "origin");
-      callback(null, origin);
-    },
+    origin: "https://simple-telegram-peach.vercel.app",
     credentials: true,
   })
 );
