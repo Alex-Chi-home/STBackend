@@ -1,8 +1,10 @@
 import dotenv from "dotenv";
 import path from "path";
+import { createServer } from "http";
 import { AppDataSource } from "./config/database";
 import app from "./app";
 import logger from "./config/logger";
+import { initializeSocketService } from "./config/socket";
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = "development";
@@ -19,10 +21,19 @@ logger.info(
 );
 
 const PORT = process.env.PORT || 3000;
+
+// Create HTTP server
+const httpServer = createServer(app);
+
+// Initialize Socket.IO
+initializeSocketService(httpServer);
+
 AppDataSource.initialize()
   .then(() => {
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);
+      logger.info(`Socket.IO is ready for connections`);
+      logger.info(`WebSocket endpoint: ws://localhost:${PORT}`);
     });
   })
   .catch((error) => {

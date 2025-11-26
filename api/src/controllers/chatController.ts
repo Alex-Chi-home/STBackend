@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ChatService } from "../services/chatService";
+import { getSocketService } from "../config/socket";
 
 export class ChatController {
   private chatService = new ChatService();
@@ -11,6 +12,16 @@ export class ChatController {
         req.user!.id,
         otherUserId
       );
+
+      // Emit new chat to both users via WebSocket
+      try {
+        const socketService = getSocketService();
+        socketService.emitNewChat(req.user!.id, chat);
+        socketService.emitNewChat(otherUserId, chat);
+      } catch (socketError) {
+        console.error("Failed to emit new chat via WebSocket:", socketError);
+      }
+
       res.status(201).json({ status: "success", data: chat });
     } catch (error) {
       next(error);
@@ -25,6 +36,18 @@ export class ChatController {
         name,
         memberIds
       );
+
+      // Emit new chat to all members via WebSocket
+      try {
+        const socketService = getSocketService();
+        const allMemberIds = [req.user!.id, ...memberIds];
+        allMemberIds.forEach((memberId) => {
+          socketService.emitNewChat(memberId, chat);
+        });
+      } catch (socketError) {
+        console.error("Failed to emit new group chat via WebSocket:", socketError);
+      }
+
       res.status(201).json({ status: "success", data: chat });
     } catch (error) {
       next(error);
@@ -42,7 +65,21 @@ export class ChatController {
       if (isNaN(chatId)) {
         throw new Error("Invalid chat ID");
       }
+
+      // Get chat members before deletion
+      const chatMembers = await this.chatService.getChatMembers(chatId);
+
       const result = await this.chatService.deleteChat(chatId, req.user!.id);
+
+      // Emit chat deletion to all members via WebSocket
+      try {
+        const socketService = getSocketService();
+        const memberIds = chatMembers.map((member: any) => member.user_id);
+        socketService.emitChatDeleted(chatId, memberIds);
+      } catch (socketError) {
+        console.error("Failed to emit chat deletion via WebSocket:", socketError);
+      }
+
       res.status(200).json({ status: "success", data: result });
     } catch (error) {
       next(error);

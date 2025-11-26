@@ -107,6 +107,12 @@ export class ChatService {
       .getMany();
   }
 
+  async getChatMembers(chatId: number) {
+    return this.chatMemberRepository.find({
+      where: { chat_id: chatId },
+    });
+  }
+
   async deleteChat(chatId: number, userId: number) {
     const chat = await this.chatRepository.findOne({
       where: { id: chatId },

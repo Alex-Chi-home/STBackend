@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { MessageService } from "../services/messageService";
+import { getSocketService } from "../config/socket";
 
 export class MessageController {
   private messageService = new MessageService();
@@ -13,6 +14,16 @@ export class MessageController {
         req.user!.id,
         content
       );
+
+      // Emit new message via WebSocket
+      try {
+        const socketService = getSocketService();
+        socketService.emitNewMessage(chatId, message);
+      } catch (socketError) {
+        // Log error but don't fail the request
+        console.error("Failed to emit message via WebSocket:", socketError);
+      }
+
       res.status(201).json({ status: "success", data: message });
     } catch (error) {
       next(error);
@@ -28,6 +39,15 @@ export class MessageController {
         req.user!.id,
         parseInt(id)
       );
+
+      // Emit message deletion via WebSocket
+      try {
+        const socketService = getSocketService();
+        socketService.emitMessageDeleted(parseInt(chatId), parseInt(id));
+      } catch (socketError) {
+        console.error("Failed to emit message deletion via WebSocket:", socketError);
+      }
+
       res.status(200).json({ status: "success", data: result });
     } catch (error) {
       next(error);
