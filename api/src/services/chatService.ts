@@ -54,7 +54,6 @@ export class ChatService {
   }
 
   async createGroupChat(userId: number, name: string, memberIds: number[]) {
-    // Remove userId from memberIds and ensure unique IDs
     const uniqueMemberIds = [
       ...new Set(memberIds.filter((id) => id !== userId)),
     ];
@@ -62,7 +61,6 @@ export class ChatService {
       throw new AppError("Duplicate or invalid member IDs provided", 400);
     }
 
-    // Check if all users exist
     const users = await this.userRepository.findBy({
       id: In([userId, ...uniqueMemberIds]),
     });
@@ -70,7 +68,6 @@ export class ChatService {
       throw new AppError("One or more users not found", 404);
     }
 
-    // Create chat
     const chat = this.chatRepository.create({
       chat_type: "group",
       name,
@@ -78,7 +75,6 @@ export class ChatService {
     });
     await this.chatRepository.save(chat);
 
-    // Create members (creator as admin, others as members)
     const members = uniqueMemberIds.map((id) =>
       this.chatMemberRepository.create({
         chat_id: chat.id,

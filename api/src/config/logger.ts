@@ -2,7 +2,6 @@ import winston from "winston";
 import fs from "fs";
 import path from "path";
 
-// Создаем директорию logs если её нет
 const logsDir = path.join(process.cwd(), "logs");
 if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });

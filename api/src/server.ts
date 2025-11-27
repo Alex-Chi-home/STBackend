@@ -22,10 +22,8 @@ logger.info(
 
 const PORT = process.env.PORT || 3000;
 
-// Create HTTP server
 const httpServer = createServer(app);
 
-// Initialize Socket.IO
 initializeSocketService(httpServer);
 
 AppDataSource.initialize()

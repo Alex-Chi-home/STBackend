@@ -7,7 +7,6 @@ export const authMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  // Check Authorization header first
   let token = req.headers.authorization?.startsWith("Bearer ")
     ? req.headers.authorization.split(" ")[1]
     : null;
@@ -15,7 +14,7 @@ export const authMiddleware = (
   if (!token && req.headers.authorization?.startsWith("jwt=")) {
     token = req.headers.authorization.split("jwt=")[1];
   }
-  // Fallback to cookie
+
   if (!token && req.cookies.jwt) {
     token = req.cookies.jwt;
   }

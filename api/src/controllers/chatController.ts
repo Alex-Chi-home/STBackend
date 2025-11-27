@@ -13,7 +13,6 @@ export class ChatController {
         otherUserId
       );
 
-      // Emit new chat to both users via WebSocket
       try {
         const socketService = getSocketService();
         socketService.emitNewChat(req.user!.id, chat);
@@ -37,7 +36,6 @@ export class ChatController {
         memberIds
       );
 
-      // Emit new chat to all members via WebSocket
       try {
         const socketService = getSocketService();
         const allMemberIds = [req.user!.id, ...memberIds];
@@ -66,12 +64,10 @@ export class ChatController {
         throw new Error("Invalid chat ID");
       }
 
-      // Get chat members before deletion
       const chatMembers = await this.chatService.getChatMembers(chatId);
 
       const result = await this.chatService.deleteChat(chatId, req.user!.id);
 
-      // Emit chat deletion to all members via WebSocket
       try {
         const socketService = getSocketService();
         const memberIds = chatMembers.map((member: any) => member.user_id);

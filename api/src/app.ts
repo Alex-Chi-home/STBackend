@@ -60,7 +60,7 @@ app.use(
   })
 );
 app.use((req, res, next) => {
-  if (req.originalUrl !== "/api/auth/health" && false) { // temp disabled
+  if (req.originalUrl !== "/api/auth/health") {
     logger.info(`${req.method} ${req.originalUrl} - ${req.ip}`);
   }
   next();

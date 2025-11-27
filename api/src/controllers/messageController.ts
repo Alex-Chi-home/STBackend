@@ -15,12 +15,10 @@ export class MessageController {
         content
       );
 
-      // Emit new message via WebSocket
       try {
         const socketService = getSocketService();
         socketService.emitNewMessage(chatId, message);
       } catch (socketError) {
-        // Log error but don't fail the request
         console.error("Failed to emit message via WebSocket:", socketError);
       }
 
@@ -40,7 +38,6 @@ export class MessageController {
         parseInt(id)
       );
 
-      // Emit message deletion via WebSocket
       try {
         const socketService = getSocketService();
         socketService.emitMessageDeleted(parseInt(chatId), parseInt(id));
