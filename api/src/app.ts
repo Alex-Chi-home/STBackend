@@ -22,7 +22,6 @@ const allowedOrigins = [
   "http://localhost:5173",
 ].filter(Boolean);
 
-app.set('trust proxy', true);
 
 app.use(helmet());
 app.use(
@@ -44,7 +43,6 @@ app.use(
     //   callback(null, "https://simple-telegram-peach.vercel.app");
     // },
     origin: (origin, callback) => {
-      console.log(origin, "origin");
       callback(null, origin);
     },
     credentials: true,
