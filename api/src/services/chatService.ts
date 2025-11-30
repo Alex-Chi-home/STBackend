@@ -14,6 +14,12 @@ export class ChatService {
   async createPrivateChat(userId: number, otherUserId: number) {
     const chatRepository = AppDataSource.getRepository(Chat);
     const chatMemberRepository = AppDataSource.getRepository(ChatMember);
+    const userRepository = AppDataSource.getRepository(User);
+
+    const otherUser = await userRepository.findOne({
+      where: { id: otherUserId },
+      select: ["id", "username", "email"],
+    });
 
     const existingChat = await chatRepository
       .createQueryBuilder("chat")
@@ -37,6 +43,7 @@ export class ChatService {
     const chat = chatRepository.create({
       chat_type: "private",
       created_by: { id: userId },
+      name: otherUser?.username,
     });
     await chatRepository.save(chat);
 

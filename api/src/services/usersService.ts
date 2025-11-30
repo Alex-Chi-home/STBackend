@@ -6,11 +6,11 @@ export class UsersService {
   async getUsers(currentUserId: number) {
     const usersRepository = AppDataSource.getRepository(User);
 
-    const user = await usersRepository.find({
+    const users = await usersRepository.find({
       where: { id: Not(currentUserId) },
       select: ["id", "username", "email"],
     });
 
-    return user;
+    return users;
   }
 }

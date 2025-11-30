@@ -8,11 +8,12 @@ export class ChatController {
   async createPrivateChat(req: Request, res: Response, next: NextFunction) {
     try {
       const { otherUserId } = req.body;
+      console.log(otherUserId, "other user id");
       const chat = await this.chatService.createPrivateChat(
         req.user!.id,
         otherUserId
       );
-
+      console.log(chat, "chat");
       try {
         const socketService = getSocketService();
         socketService.emitNewChat(req.user!.id, chat);
@@ -43,7 +44,10 @@ export class ChatController {
           socketService.emitNewChat(memberId, chat);
         });
       } catch (socketError) {
-        console.error("Failed to emit new group chat via WebSocket:", socketError);
+        console.error(
+          "Failed to emit new group chat via WebSocket:",
+          socketError
+        );
       }
 
       res.status(201).json({ status: "success", data: chat });
@@ -73,7 +77,10 @@ export class ChatController {
         const memberIds = chatMembers.map((member: any) => member.user_id);
         socketService.emitChatDeleted(chatId, memberIds);
       } catch (socketError) {
-        console.error("Failed to emit chat deletion via WebSocket:", socketError);
+        console.error(
+          "Failed to emit chat deletion via WebSocket:",
+          socketError
+        );
       }
 
       res.status(200).json({ status: "success", data: result });

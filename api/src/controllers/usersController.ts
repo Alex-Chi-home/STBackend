@@ -7,7 +7,6 @@ export class UsersController {
 
   async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log('get user direct !!!')
       const user = await this.usersService.getUsers(req.user!.id);
       if (!user) {
         throw new AppError("User not found", 403);

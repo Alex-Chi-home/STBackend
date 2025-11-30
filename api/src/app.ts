@@ -22,7 +22,6 @@ const allowedOrigins = [
   "http://localhost:5173",
 ].filter(Boolean);
 
-
 app.use(helmet());
 app.use(
   cors({
@@ -58,7 +57,8 @@ app.use(
   })
 );
 app.use((req, res, next) => {
-  if (req.originalUrl !== "/api/auth/health") {
+  if (req.originalUrl !== "/api/auth/health" && false) {
+    // temp disabled
     logger.info(`${req.method} ${req.originalUrl} - ${req.ip}`);
   }
   next();
