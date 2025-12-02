@@ -31,6 +31,15 @@ router.post(
     authController.login(req, res, next)
 );
 
+router.post(
+  "/logout",
+  [
+    validateRequest,
+  ],
+  (req: Request, res: Response, next: NextFunction) =>
+    authController.logout(req, res, next)
+);
+
 router.get("/health", (_req: Request, res: Response, _next: NextFunction) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
 });

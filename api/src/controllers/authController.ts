@@ -59,6 +59,23 @@ export class AuthController {
       next(error);
     }
   }
+
+  async logout(_req: Request, res: Response, next: NextFunction) {
+    try {
+
+      res.clearCookie("jwt", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
+    });
+
+     res.json({ status: "success", message: "Logged out" });
+
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 // async logout(req: Request, res: Response) {
