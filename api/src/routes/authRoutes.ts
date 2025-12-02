@@ -33,9 +33,6 @@ router.post(
 
 router.post(
   "/logout",
-  [
-    validateRequest,
-  ],
   (req: Request, res: Response, next: NextFunction) =>
     authController.logout(req, res, next)
 );
