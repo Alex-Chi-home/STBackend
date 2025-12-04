@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
 } from "typeorm";
 import { User } from "./User";
 
@@ -27,4 +28,7 @@ export class Chat {
 
   @ManyToOne(() => User, { nullable: true, onDelete: "SET NULL" })
   created_by!: User;
+
+  @OneToMany(() => User, (chatMember: User) => chatMember)
+  members!: User[];
 }

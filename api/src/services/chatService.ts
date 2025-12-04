@@ -16,6 +16,11 @@ export class ChatService {
     const chatMemberRepository = AppDataSource.getRepository(ChatMember);
     const userRepository = AppDataSource.getRepository(User);
 
+    const user = await userRepository.findOne({
+      where: { id: userId },
+      select: ["id", "username", "email"],
+    });
+ 
     const otherUser = await userRepository.findOne({
       where: { id: otherUserId },
       select: ["id", "username", "email"],
@@ -42,8 +47,8 @@ export class ChatService {
 
     const chat = chatRepository.create({
       chat_type: "private",
-      created_by: { id: userId },
-      name: otherUser?.username,
+      created_by: { id: userId, username: user?.username },
+      members: [{id: otherUser?.id, username: otherUser?.username}]
     });
     await chatRepository.save(chat);
 
@@ -61,12 +66,18 @@ export class ChatService {
   }
 
   async createGroupChat(userId: number, name: string, memberIds: number[]) {
+    const userRepository = AppDataSource.getRepository(User);
     const uniqueMemberIds = [
       ...new Set(memberIds.filter((id) => id !== userId)),
     ];
     if (uniqueMemberIds.length !== memberIds.length) {
       throw new AppError("Duplicate or invalid member IDs provided", 400);
     }
+    
+    const user = await userRepository.findOne({
+    where: { id: userId },
+    select: ["id", "username", "email"],
+    });
 
     const users = await this.userRepository.findBy({
       id: In([userId, ...uniqueMemberIds]),
@@ -78,7 +89,8 @@ export class ChatService {
     const chat = this.chatRepository.create({
       chat_type: "group",
       name,
-      created_by: { id: userId },
+      created_by: { id: userId, username: user?.username },
+      members: users.map(user=> ({id: user.id, username: user.username })).filter(user=> user.id !== userId)
     });
     await this.chatRepository.save(chat);
 

@@ -8,12 +8,12 @@ export class ChatController {
   async createPrivateChat(req: Request, res: Response, next: NextFunction) {
     try {
       const { otherUserId } = req.body;
-      console.log(otherUserId, "other user id");
+    
       const chat = await this.chatService.createPrivateChat(
         req.user!.id,
         otherUserId
       );
-      console.log(chat, "chat");
+
       try {
         const socketService = getSocketService();
         socketService.emitNewChat(req.user!.id, chat);
