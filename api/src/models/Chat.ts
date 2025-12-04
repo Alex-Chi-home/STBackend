@@ -6,8 +6,10 @@ import {
   UpdateDateColumn,
   ManyToOne,
   OneToMany,
+  JoinColumn,
 } from "typeorm";
 import { User } from "./User";
+import { ChatMember } from "./ChatMember";
 
 @Entity("chats")
 export class Chat {
@@ -26,9 +28,10 @@ export class Chat {
   @UpdateDateColumn()
   updated_at!: Date;
 
-  @ManyToOne(() => User, { nullable: true, onDelete: "SET NULL" })
+  @ManyToOne(() => User, { nullable: true, onDelete: "SET NULL", eager: false })
+  @JoinColumn({ name: "created_by_id" })
   created_by!: User;
 
-  @OneToMany(() => User, (chatMember: User) => chatMember)
-  members!: User[];
+  @OneToMany(() => ChatMember, (chatMember) => chatMember.chat)
+  chatMembers!: ChatMember[];
 }

@@ -11,22 +11,34 @@ export class ChatService {
     AppDataSource.getRepository(ChatMember);
   private userRepository: Repository<User> = AppDataSource.getRepository(User);
 
+
+  private formatChatResponse(chat: Chat, currentUserId: number) {
+    const createdBy = chat.created_by
+      ? { id: chat.created_by.id, username: chat.created_by.username }
+      : null;
+
+    const members = chat.chatMembers
+      ? chat.chatMembers
+          .filter((cm) => cm.user_id !== currentUserId)
+          .map((cm) => ({
+            id: cm.user.id,
+            username: cm.user.username,
+          }))
+      : [];
+
+    return {
+      id: chat.id,
+      chat_type: chat.chat_type,
+      name: chat.name,
+      created_at: chat.created_at,
+      updated_at: chat.updated_at,
+      created_by: createdBy,
+      members,
+    };
+  }
+
   async createPrivateChat(userId: number, otherUserId: number) {
-    const chatRepository = AppDataSource.getRepository(Chat);
-    const chatMemberRepository = AppDataSource.getRepository(ChatMember);
-    const userRepository = AppDataSource.getRepository(User);
-
-    const user = await userRepository.findOne({
-      where: { id: userId },
-      select: ["id", "username", "email"],
-    });
- 
-    const otherUser = await userRepository.findOne({
-      where: { id: otherUserId },
-      select: ["id", "username", "email"],
-    });
-
-    const existingChat = await chatRepository
+    const existingChat = await this.chatRepository
       .createQueryBuilder("chat")
       .innerJoin("chat_members", "cm1", "cm1.chat_id = chat.id")
       .innerJoin(
@@ -39,45 +51,47 @@ export class ChatService {
         user1: userId,
         user2: otherUserId,
       })
+      .leftJoinAndSelect("chat.created_by", "created_by")
+      .leftJoinAndSelect("chat.chatMembers", "chatMembers")
+      .leftJoinAndSelect("chatMembers.user", "memberUser")
       .getOne();
 
     if (existingChat) {
-      return existingChat;
+      return this.formatChatResponse(existingChat, userId);
     }
 
-    const chat = chatRepository.create({
+    const chat = this.chatRepository.create({
       chat_type: "private",
-      created_by: { id: userId, username: user?.username },
-      members: [{id: otherUser?.id, username: otherUser?.username}]
+      created_by: { id: userId },
     });
-    await chatRepository.save(chat);
+    await this.chatRepository.save(chat);
 
-    const member1 = chatMemberRepository.create({
+    const member1 = this.chatMemberRepository.create({
       chat_id: chat.id,
       user_id: userId,
     });
-    const member2 = chatMemberRepository.create({
+    const member2 = this.chatMemberRepository.create({
       chat_id: chat.id,
       user_id: otherUserId,
     });
-    await chatMemberRepository.save([member1, member2]);
+    await this.chatMemberRepository.save([member1, member2]);
 
-    return chat;
+    // Reload chat with all relations
+    const fullChat = await this.chatRepository.findOne({
+      where: { id: chat.id },
+      relations: ["created_by", "chatMembers", "chatMembers.user"],
+    });
+
+    return this.formatChatResponse(fullChat!, userId);
   }
 
   async createGroupChat(userId: number, name: string, memberIds: number[]) {
-    const userRepository = AppDataSource.getRepository(User);
     const uniqueMemberIds = [
       ...new Set(memberIds.filter((id) => id !== userId)),
     ];
     if (uniqueMemberIds.length !== memberIds.length) {
       throw new AppError("Duplicate or invalid member IDs provided", 400);
     }
-    
-    const user = await userRepository.findOne({
-    where: { id: userId },
-    select: ["id", "username", "email"],
-    });
 
     const users = await this.userRepository.findBy({
       id: In([userId, ...uniqueMemberIds]),
@@ -89,8 +103,7 @@ export class ChatService {
     const chat = this.chatRepository.create({
       chat_type: "group",
       name,
-      created_by: { id: userId, username: user?.username },
-      members: users.map(user=> ({id: user.id, username: user.username })).filter(user=> user.id !== userId)
+      created_by: { id: userId },
     });
     await this.chatRepository.save(chat);
 
@@ -110,16 +123,26 @@ export class ChatService {
     );
     await this.chatMemberRepository.save(members);
 
-    return chat;
+    // Reload chat with all relations
+    const fullChat = await this.chatRepository.findOne({
+      where: { id: chat.id },
+      relations: ["created_by", "chatMembers", "chatMembers.user"],
+    });
+
+    return this.formatChatResponse(fullChat!, userId);
   }
 
   async getUserChats(userId: number) {
-    const chatRepository = AppDataSource.getRepository(Chat);
-    return chatRepository
+    const chats = await this.chatRepository
       .createQueryBuilder("chat")
       .innerJoin("chat_members", "cm", "cm.chat_id = chat.id")
+      .leftJoinAndSelect("chat.created_by", "created_by")
+      .leftJoinAndSelect("chat.chatMembers", "chatMembers")
+      .leftJoinAndSelect("chatMembers.user", "memberUser")
       .where("cm.user_id = :userId", { userId })
       .getMany();
+
+    return chats.map((chat) => this.formatChatResponse(chat, userId));
   }
 
   async getChatMembers(chatId: number) {
