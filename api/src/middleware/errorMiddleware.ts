@@ -10,12 +10,7 @@ const allowedOrigins = [
   "https://simple-telegram-peach.vercel.app",
 ].filter(Boolean);
 
-export const errorMiddleware = (
-  err: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const errorMiddleware = (err: Error, req: Request, res: Response, next: NextFunction) => {
   // Add CORS headers to error responses
   const origin = req.get("origin");
   if (origin && allowedOrigins.includes(origin)) {
@@ -32,9 +27,7 @@ export const errorMiddleware = (
       message: err.message,
     });
   } else {
-    logger.error(
-      `500 - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`
-    );
+    logger.error(`500 - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
     res.status(500).json({
       status: "error",
       message: "Internal server error",

@@ -23,7 +23,7 @@ export class SocketService {
       cors: {
         origin: (origin, callback) => {
           if (!origin) return callback(null, true);
-          
+
           if (process.env.NODE_ENV === "development") {
             return callback(null, true);
           }
@@ -52,8 +52,7 @@ export class SocketService {
     this.io.use((socket: AuthenticatedSocket, next) => {
       try {
         const token =
-          socket.handshake.auth.token ||
-          socket.handshake.headers.authorization?.split(" ")[1];
+          socket.handshake.auth.token || socket.handshake.headers.authorization?.split(" ")[1];
 
         if (!token) {
           logger.warn("Socket connection attempt without token");
@@ -184,4 +183,3 @@ export const getSocketService = (): SocketService => {
   }
   return socketService;
 };
-

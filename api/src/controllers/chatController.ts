@@ -8,11 +8,8 @@ export class ChatController {
   async createPrivateChat(req: Request, res: Response, next: NextFunction) {
     try {
       const { otherUserId } = req.body;
-    
-      const chat = await this.chatService.createPrivateChat(
-        req.user!.id,
-        otherUserId
-      );
+
+      const chat = await this.chatService.createPrivateChat(req.user!.id, otherUserId);
 
       try {
         const socketService = getSocketService();
@@ -31,11 +28,7 @@ export class ChatController {
   async createGroupChat(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, memberIds } = req.body;
-      const chat = await this.chatService.createGroupChat(
-        req.user!.id,
-        name,
-        memberIds
-      );
+      const chat = await this.chatService.createGroupChat(req.user!.id, name, memberIds);
 
       try {
         const socketService = getSocketService();
@@ -44,10 +37,7 @@ export class ChatController {
           socketService.emitNewChat(memberId, chat);
         });
       } catch (socketError) {
-        console.error(
-          "Failed to emit new group chat via WebSocket:",
-          socketError
-        );
+        console.error("Failed to emit new group chat via WebSocket:", socketError);
       }
 
       res.status(201).json({ status: "success", data: chat });
@@ -77,10 +67,7 @@ export class ChatController {
         const memberIds = chatMembers.map((member: any) => member.user_id);
         socketService.emitChatDeleted(chatId, memberIds);
       } catch (socketError) {
-        console.error(
-          "Failed to emit chat deletion via WebSocket:",
-          socketError
-        );
+        console.error("Failed to emit chat deletion via WebSocket:", socketError);
       }
 
       res.status(200).json({ status: "success", data: result });

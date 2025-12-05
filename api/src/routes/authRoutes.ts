@@ -11,13 +11,10 @@ router.post(
   [
     check("username").notEmpty().withMessage("Username is required"),
     check("email").isEmail().withMessage("Valid email is required"),
-    check("password")
-      .isLength({ min: 6 })
-      .withMessage("Password must be at least 6 characters"),
+    check("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
     validateRequest,
   ],
-  (req: Request, res: Response, next: NextFunction) =>
-    authController.register(req, res, next)
+  (req: Request, res: Response, next: NextFunction) => authController.register(req, res, next)
 );
 
 router.post(
@@ -27,14 +24,11 @@ router.post(
     check("password").notEmpty().withMessage("Password is required"),
     validateRequest,
   ],
-  (req: Request, res: Response, next: NextFunction) =>
-    authController.login(req, res, next)
+  (req: Request, res: Response, next: NextFunction) => authController.login(req, res, next)
 );
 
-router.post(
-  "/logout",
-  (req: Request, res: Response, next: NextFunction) =>
-    authController.logout(req, res, next)
+router.post("/logout", (req: Request, res: Response, next: NextFunction) =>
+  authController.logout(req, res, next)
 );
 
 router.get("/health", (_req: Request, res: Response, _next: NextFunction) => {

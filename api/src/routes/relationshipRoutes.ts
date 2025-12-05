@@ -12,13 +12,10 @@ router.post(
   authMiddleware,
   [
     check("relatedUserId").isInt().withMessage("Valid user ID is required"),
-    check("type")
-      .isIn(["friend", "follower", "blocked"])
-      .withMessage("Invalid relationship type"),
+    check("type").isIn(["friend", "follower", "blocked"]).withMessage("Invalid relationship type"),
     validateRequest,
   ],
-  (req: Request, res: Response) =>
-    relationshipController.addRelationship(req, res)
+  (req: Request, res: Response) => relationshipController.addRelationship(req, res)
 );
 
 router.get("/", authMiddleware, (req: Request, res: Response) =>

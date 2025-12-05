@@ -10,15 +10,12 @@ if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = "development";
 }
 
-const envFile =
-  process.env.NODE_ENV === "production" ? ".env" : ".env.development";
+const envFile = process.env.NODE_ENV === "production" ? ".env" : ".env.development";
 const envPath = path.resolve(process.cwd(), envFile);
 
 dotenv.config({ path: envPath });
 
-logger.info(
-  `Loading environment from: ${envFile} (NODE_ENV=${process.env.NODE_ENV})`
-);
+logger.info(`Loading environment from: ${envFile} (NODE_ENV=${process.env.NODE_ENV})`);
 
 const PORT = process.env.PORT || 3000;
 

@@ -8,11 +8,7 @@ export class AuthController {
   async register(req: Request, res: Response, next: NextFunction) {
     try {
       const { username, email, password } = req.body;
-      const { token, id } = await this.authService.register(
-        username,
-        email,
-        password
-      );
+      const { token, id } = await this.authService.register(username, email, password);
 
       const cookieOptions: CookieOptions = {
         httpOnly: true,
@@ -36,10 +32,7 @@ export class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;
-      const { username, token, id } = await this.authService.login(
-        email,
-        password
-      );
+      const { username, token, id } = await this.authService.login(email, password);
 
       const cookieOptions: CookieOptions = {
         httpOnly: true,
@@ -62,16 +55,14 @@ export class AuthController {
 
   async logout(_req: Request, res: Response, next: NextFunction) {
     try {
-
       res.clearCookie("jwt", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      path: "/",
-    });
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        path: "/",
+      });
 
-     res.json({ status: "success", message: "Logged out" });
-
+      res.json({ status: "success", message: "Logged out" });
     } catch (error) {
       next(error);
     }

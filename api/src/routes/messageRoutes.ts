@@ -15,8 +15,7 @@ router.post(
     check("content").notEmpty().withMessage("Message content is required"),
     validateRequest,
   ],
-  (req: Request, res: Response, next: NextFunction) =>
-    messageController.sendMessage(req, res, next)
+  (req: Request, res: Response, next: NextFunction) => messageController.sendMessage(req, res, next)
 );
 
 router.delete(
@@ -31,11 +30,8 @@ router.delete(
     messageController.deleteMessage(req, res, next)
 );
 
-router.get(
-  "/:chatId",
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    messageController.getChatMessages(req, res, next)
+router.get("/:chatId", authMiddleware, (req: Request, res: Response, next: NextFunction) =>
+  messageController.getChatMessages(req, res, next)
 );
 
 export default router;

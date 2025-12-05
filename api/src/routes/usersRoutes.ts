@@ -5,11 +5,8 @@ import { UsersController } from "../controllers/usersController";
 const router = Router();
 const userController = new UsersController();
 
-router.get(
-  "/",
-  authMiddleware,
-  (req: Request, res: Response, next: NextFunction) =>
-    userController.getUsers(req, res, next)
+router.get("/", authMiddleware, (req: Request, res: Response, next: NextFunction) =>
+  userController.getUsers(req, res, next)
 );
 
 export default router;

@@ -9,11 +9,7 @@ export class MessageController {
     try {
       const { chatId, content } = req.body;
 
-      const message = await this.messageService.sendMessage(
-        chatId,
-        req.user!.id,
-        content
-      );
+      const message = await this.messageService.sendMessage(chatId, req.user!.id, content);
 
       try {
         const socketService = getSocketService();
@@ -54,10 +50,7 @@ export class MessageController {
   async getChatMessages(req: Request, res: Response, next: NextFunction) {
     try {
       const { chatId } = req.params;
-      const messages = await this.messageService.getChatMessages(
-        req.user!.id,
-        parseInt(chatId)
-      );
+      const messages = await this.messageService.getChatMessages(req.user!.id, parseInt(chatId));
       res.json({ status: "success", data: messages });
     } catch (error) {
       next(error);

@@ -8,8 +8,7 @@ export class RelationshipService {
     relatedUserId: number,
     type: "friend" | "follower" | "blocked"
   ) {
-    const relationshipRepository =
-      AppDataSource.getRepository(UserRelationship);
+    const relationshipRepository = AppDataSource.getRepository(UserRelationship);
 
     if (userId === relatedUserId) {
       throw new AppError("Cannot add relationship with self", 400);
@@ -33,8 +32,7 @@ export class RelationshipService {
   }
 
   async getRelationships(userId: number) {
-    const relationshipRepository =
-      AppDataSource.getRepository(UserRelationship);
+    const relationshipRepository = AppDataSource.getRepository(UserRelationship);
     return relationshipRepository.find({
       where: { user_id: userId },
       relations: ["related_user"],

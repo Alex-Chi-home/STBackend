@@ -7,10 +7,8 @@ import { User } from "../models/User";
 
 export class ChatService {
   private chatRepository: Repository<Chat> = AppDataSource.getRepository(Chat);
-  private chatMemberRepository: Repository<ChatMember> =
-    AppDataSource.getRepository(ChatMember);
+  private chatMemberRepository: Repository<ChatMember> = AppDataSource.getRepository(ChatMember);
   private userRepository: Repository<User> = AppDataSource.getRepository(User);
-
 
   private formatChatResponse(chat: Chat, currentUserId: number) {
     const createdBy = chat.created_by
@@ -41,11 +39,7 @@ export class ChatService {
     const existingChat = await this.chatRepository
       .createQueryBuilder("chat")
       .innerJoin("chat_members", "cm1", "cm1.chat_id = chat.id")
-      .innerJoin(
-        "chat_members",
-        "cm2",
-        "cm2.chat_id = chat.id AND cm2.user_id != cm1.user_id"
-      )
+      .innerJoin("chat_members", "cm2", "cm2.chat_id = chat.id AND cm2.user_id != cm1.user_id")
       .where("chat.chat_type = :type", { type: "private" })
       .andWhere("cm1.user_id = :user1 AND cm2.user_id = :user2", {
         user1: userId,
@@ -86,9 +80,7 @@ export class ChatService {
   }
 
   async createGroupChat(userId: number, name: string, memberIds: number[]) {
-    const uniqueMemberIds = [
-      ...new Set(memberIds.filter((id) => id !== userId)),
-    ];
+    const uniqueMemberIds = [...new Set(memberIds.filter((id) => id !== userId))];
     if (uniqueMemberIds.length !== memberIds.length) {
       throw new AppError("Duplicate or invalid member IDs provided", 400);
     }
@@ -162,10 +154,7 @@ export class ChatService {
     }
 
     if (chat.chat_type === "group" && chat.created_by.id !== userId) {
-      throw new AppError(
-        "You are not authorized to delete this group chat",
-        403
-      );
+      throw new AppError("You are not authorized to delete this group chat", 403);
     }
 
     if (chat.chat_type === "private") {

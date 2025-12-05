@@ -15,9 +15,7 @@ export class RelationshipController {
   }
 
   async getRelationships(req: Request, res: Response) {
-    const relationships = await this.relationshipService.getRelationships(
-      req.user!.id
-    );
+    const relationships = await this.relationshipService.getRelationships(req.user!.id);
     res.json({ status: "success", data: relationships });
   }
 }

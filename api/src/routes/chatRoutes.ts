@@ -10,10 +10,7 @@ const chatController = new ChatController();
 router.post(
   "/private",
   authMiddleware,
-  [
-    check("otherUserId").isInt().withMessage("Valid user ID is required"),
-    validateRequest,
-  ],
+  [check("otherUserId").isInt().withMessage("Valid user ID is required"), validateRequest],
   (req: Request, res: Response, next: NextFunction) =>
     chatController.createPrivateChat(req, res, next)
 );
@@ -37,12 +34,8 @@ router.get("/", authMiddleware, (req: Request, res: Response) =>
 router.delete(
   "/:id",
   authMiddleware,
-  [
-    check("id").isInt().withMessage("Valid chat ID is required"),
-    validateRequest,
-  ],
-  (req: Request, res: Response, next: NextFunction) =>
-    chatController.deleteChat(req, res, next)
+  [check("id").isInt().withMessage("Valid chat ID is required"), validateRequest],
+  (req: Request, res: Response, next: NextFunction) => chatController.deleteChat(req, res, next)
 );
 
 export default router;
