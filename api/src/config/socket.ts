@@ -49,8 +49,17 @@ export class SocketService {
         methods: ["GET", "POST"],
       },
       transports: ["websocket", "polling"],
-      pingTimeout: 60000,
+      // Increased timeouts to handle unstable connections
+      pingTimeout: 120000, // 2 minutes (was 60s)
       pingInterval: 25000,
+      // Allow upgrades and handle reconnection better
+      allowUpgrades: true,
+      upgradeTimeout: 30000,
+      // Connection state recovery (Socket.IO 4.6+)
+      connectionStateRecovery: {
+        maxDisconnectionDuration: 2 * 60 * 1000, // 2 minutes
+        skipMiddlewares: true,
+      },
     });
 
     this.setupMiddleware();
@@ -138,8 +147,9 @@ export class SocketService {
         return;
       }
 
+      const userSocketCount = this.userSockets.get(userId)?.size || 0;
       logger.info(
-        `User ${userId} connected with socket ${socket.id}, transport: ${socket.conn.transport.name}`
+        `User ${userId} connected with socket ${socket.id}, transport: ${socket.conn.transport.name}, existing sockets: ${userSocketCount}`
       );
 
       if (!this.userSockets.has(userId)) {
@@ -150,11 +160,32 @@ export class SocketService {
       socket.join(`user:${userId}`);
       logger.debug(`User ${userId} joined personal room user:${userId}`);
 
+      // Notify client that connection is ready and they should rejoin chats
+      socket.emit("connection:ready", {
+        userId,
+        socketId: socket.id,
+        message: "Please rejoin your chat rooms",
+      });
+      logger.info(`Sent connection:ready to user ${userId}, socket ${socket.id}`);
+
       // Log all events for debugging
       socket.onAny((eventName, ...args) => {
         logger.debug(
           `Socket ${socket.id} received event: ${eventName}, args: ${JSON.stringify(args)}`
         );
+      });
+
+      // Allow client to join multiple chats at once (for reconnection)
+      socket.on("join:chats", (chatIds: number[]) => {
+        logger.info(`User ${userId} requesting to join multiple chats: ${chatIds.join(", ")}`);
+        chatIds.forEach((chatId) => {
+          socket.join(`chat:${chatId}`);
+        });
+        const rooms = Array.from(socket.rooms);
+        logger.info(
+          `User ${userId} joined ${chatIds.length} chats, now in rooms: ${rooms.join(", ")}`
+        );
+        socket.emit("joined:chats", { chatIds });
       });
 
       socket.on("join:chat", (chatId: number) => {
