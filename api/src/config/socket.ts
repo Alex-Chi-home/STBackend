@@ -19,16 +19,26 @@ export class SocketService {
       "http://localhost:5173",
     ].filter(Boolean);
 
+    logger.info(`Socket.IO initializing with allowed origins: ${JSON.stringify(allowedOrigins)}`);
+    logger.info(`NODE_ENV: ${process.env.NODE_ENV}`);
+
     this.io = new Server(httpServer, {
       cors: {
         origin: (origin, callback) => {
-          if (!origin) return callback(null, true);
+          logger.debug(`Socket.IO CORS check - origin: ${origin || "no-origin"}`);
+
+          if (!origin) {
+            logger.debug("Socket.IO CORS: No origin, allowing");
+            return callback(null, true);
+          }
 
           if (process.env.NODE_ENV === "development") {
+            logger.debug(`Socket.IO CORS: Development mode, allowing origin: ${origin}`);
             return callback(null, true);
           }
 
           if (allowedOrigins.includes(origin)) {
+            logger.debug(`Socket.IO CORS: Origin allowed: ${origin}`);
             return callback(null, true);
           }
 
@@ -45,49 +55,117 @@ export class SocketService {
 
     this.setupMiddleware();
     this.setupEventHandlers();
+    this.setupDebugListeners();
   }
 
   private setupMiddleware() {
     // JWT Authentication middleware
     this.io.use((socket: AuthenticatedSocket, next) => {
+      const clientInfo = {
+        id: socket.id,
+        address: socket.handshake.address,
+        origin: socket.handshake.headers.origin,
+        transport: socket.conn?.transport?.name,
+        query: socket.handshake.query,
+      };
+      logger.info(`Socket connection attempt: ${JSON.stringify(clientInfo)}`);
+
       try {
         const token =
           socket.handshake.auth.token || socket.handshake.headers.authorization?.split(" ")[1];
 
+        logger.debug(
+          `Token present: ${!!token}, from auth: ${!!socket.handshake.auth.token}, from header: ${!!socket.handshake.headers.authorization}`
+        );
+
         if (!token) {
-          logger.warn("Socket connection attempt without token");
+          logger.warn(`Socket connection rejected - no token. Socket: ${socket.id}`);
           return next(new Error("Authentication token missing"));
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+          logger.error("JWT_SECRET is not defined!");
+          return next(new Error("Server configuration error"));
+        }
+
+        const decoded = jwt.verify(token, jwtSecret) as {
           userId: number;
         };
 
         socket.userId = decoded.userId;
-        logger.info(`Socket authenticated for user ${decoded.userId}`);
+        logger.info(`Socket authenticated for user ${decoded.userId}, socket: ${socket.id}`);
         next();
       } catch (error) {
-        logger.error("Socket authentication error:", error);
+        logger.error(`Socket authentication error for ${socket.id}:`, error);
         next(new Error("Invalid or expired token"));
       }
     });
   }
 
+  private setupDebugListeners() {
+    this.io.engine.on("connection_error", (err) => {
+      logger.error(`Socket.IO Engine connection error: ${err.message}`, {
+        code: err.code,
+        context: err.context,
+      });
+    });
+
+    // Log all active rooms periodically
+    setInterval(() => {
+      const rooms = this.io.sockets.adapter.rooms;
+      const roomList: string[] = [];
+      rooms.forEach((sockets, room) => {
+        if (!room.startsWith("/")) {
+          roomList.push(`${room}(${sockets.size})`);
+        }
+      });
+      if (roomList.length > 0) {
+        logger.debug(`Active rooms: ${roomList.join(", ")}`);
+      }
+      logger.debug(
+        `Online users: ${this.userSockets.size}, Total sockets: ${this.io.sockets.sockets.size}`
+      );
+    }, 30000);
+  }
+
   private setupEventHandlers() {
     this.io.on("connection", (socket: AuthenticatedSocket) => {
-      const userId = socket.userId!;
-      logger.info(`User ${userId} connected with socket ${socket.id}`);
+      const userId = socket.userId;
+      if (!userId) {
+        logger.error(`Socket connected without userId! Socket: ${socket.id}`);
+        socket.disconnect();
+        return;
+      }
+
+      logger.info(
+        `User ${userId} connected with socket ${socket.id}, transport: ${socket.conn.transport.name}`
+      );
 
       if (!this.userSockets.has(userId)) {
         this.userSockets.set(userId, new Set());
       }
-      this.userSockets.get(userId)!.add(socket.id);
+      this.userSockets.get(userId)?.add(socket.id);
 
       socket.join(`user:${userId}`);
+      logger.debug(`User ${userId} joined personal room user:${userId}`);
+
+      // Log all events for debugging
+      socket.onAny((eventName, ...args) => {
+        logger.debug(
+          `Socket ${socket.id} received event: ${eventName}, args: ${JSON.stringify(args)}`
+        );
+      });
 
       socket.on("join:chat", (chatId: number) => {
+        logger.info(`User ${userId} requesting to join chat ${chatId}`);
         socket.join(`chat:${chatId}`);
-        logger.info(`User ${userId} joined chat ${chatId}`);
+        logger.info(`User ${userId} joined chat room chat:${chatId}`);
+
+        // Log current rooms for this socket
+        const rooms = Array.from(socket.rooms);
+        logger.debug(`Socket ${socket.id} is now in rooms: ${rooms.join(", ")}`);
+
         socket.emit("joined:chat", { chatId });
       });
 
@@ -98,6 +176,7 @@ export class SocketService {
       });
 
       socket.on("typing:start", (data: { chatId: number }) => {
+        logger.debug(`User ${userId} started typing in chat ${data.chatId}`);
         socket.to(`chat:${data.chatId}`).emit("user:typing", {
           userId,
           chatId: data.chatId,
@@ -105,6 +184,7 @@ export class SocketService {
       });
 
       socket.on("typing:stop", (data: { chatId: number }) => {
+        logger.debug(`User ${userId} stopped typing in chat ${data.chatId}`);
         socket.to(`chat:${data.chatId}`).emit("user:stopped-typing", {
           userId,
           chatId: data.chatId,
@@ -112,6 +192,7 @@ export class SocketService {
       });
 
       socket.on("message:read", (data: { messageId: number; chatId: number }) => {
+        logger.debug(`User ${userId} read message ${data.messageId} in chat ${data.chatId}`);
         socket.to(`chat:${data.chatId}`).emit("message:read-status", {
           messageId: data.messageId,
           userId,
@@ -119,39 +200,70 @@ export class SocketService {
         });
       });
 
-      socket.on("disconnect", () => {
-        logger.info(`User ${userId} disconnected socket ${socket.id}`);
+      socket.on("error", (error) => {
+        logger.error(`Socket ${socket.id} error:`, error);
+      });
+
+      socket.on("disconnect", (reason) => {
+        logger.info(`User ${userId} disconnected socket ${socket.id}, reason: ${reason}`);
         const userSocketSet = this.userSockets.get(userId);
         if (userSocketSet) {
           userSocketSet.delete(socket.id);
           if (userSocketSet.size === 0) {
             this.userSockets.delete(userId);
+            logger.debug(`User ${userId} has no more active sockets`);
+          } else {
+            logger.debug(`User ${userId} still has ${userSocketSet.size} active socket(s)`);
           }
         }
       });
     });
   }
 
-  public emitNewMessage(chatId: number, message: any) {
-    this.io.to(`chat:${chatId}`).emit("message:new", message);
+  public emitNewMessage(chatId: number, message: unknown) {
+    const room = `chat:${chatId}`;
+    const socketsInRoom = this.io.sockets.adapter.rooms.get(room);
+    const socketCount = socketsInRoom ? socketsInRoom.size : 0;
+
+    logger.info(`Emitting new message to room ${room}, sockets in room: ${socketCount}`);
+    if (socketCount === 0) {
+      logger.warn(`No sockets in room ${room}! Message may not be delivered.`);
+    } else {
+      logger.debug(
+        `Sockets in room ${room}: ${socketsInRoom ? Array.from(socketsInRoom).join(", ") : "none"}`
+      );
+    }
+
+    this.io.to(room).emit("message:new", message);
     logger.info(`Emitted new message to chat ${chatId}`);
   }
 
   public emitMessageDeleted(chatId: number, messageId: number) {
-    this.io.to(`chat:${chatId}`).emit("message:deleted", { chatId, messageId });
+    const room = `chat:${chatId}`;
+    const socketsInRoom = this.io.sockets.adapter.rooms.get(room);
+    logger.info(`Emitting message deletion to room ${room}, sockets: ${socketsInRoom?.size || 0}`);
+
+    this.io.to(room).emit("message:deleted", { chatId, messageId });
     logger.info(`Emitted message deletion to chat ${chatId}`);
   }
 
-  public emitNewChat(userId: number, chat: any) {
-    this.io.to(`user:${userId}`).emit("chat:new", chat);
+  public emitNewChat(userId: number, chat: unknown) {
+    const room = `user:${userId}`;
+    const socketsInRoom = this.io.sockets.adapter.rooms.get(room);
+    logger.info(`Emitting new chat to room ${room}, sockets: ${socketsInRoom?.size || 0}`);
+
+    this.io.to(room).emit("chat:new", chat);
     logger.info(`Emitted new chat to user ${userId}`);
   }
 
   public emitChatDeleted(chatId: number, userIds: number[]) {
     userIds.forEach((userId) => {
-      this.io.to(`user:${userId}`).emit("chat:deleted", { chatId });
+      const room = `user:${userId}`;
+      const socketsInRoom = this.io.sockets.adapter.rooms.get(room);
+      logger.debug(`Emitting chat deletion to room ${room}, sockets: ${socketsInRoom?.size || 0}`);
+      this.io.to(room).emit("chat:deleted", { chatId });
     });
-    logger.info(`Emitted chat deletion to users`);
+    logger.info(`Emitted chat deletion to ${userIds.length} users`);
   }
 
   public getIO(): Server {

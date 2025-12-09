@@ -15,6 +15,10 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
+// Trust proxy - required when running behind Docker/nginx/reverse proxy
+// This fixes express-rate-limit X-Forwarded-For header issues
+app.set("trust proxy", 1);
+
 // const allowedOrigins = [
 //   process.env.FRONTEND_URL || "http://localhost:3000",
 //   process.env.NGROK_URL,
@@ -57,7 +61,7 @@ app.use(
 app.use((req, res, next) => {
   if (req.originalUrl !== "/api/auth/health") {
     // temp disabled
-    logger.info(`${req.method} ${req.originalUrl} - ${req.ip}`);
+    // logger.info(`${req.method} ${req.originalUrl} - ${req.ip}`);
   }
   next();
 });
