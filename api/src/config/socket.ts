@@ -106,7 +106,17 @@ export class SocketService {
         logger.info(`Socket authenticated for user ${decoded.userId}, socket: ${socket.id}`);
         next();
       } catch (error) {
-        logger.error(`Socket authentication error for ${socket.id}:`, error);
+        if (error instanceof jwt.TokenExpiredError) {
+          logger.warn(
+            `Socket auth failed - token EXPIRED for ${socket.id}. Expired at: ${error.expiredAt}`
+          );
+        } else if (error instanceof jwt.JsonWebTokenError) {
+          logger.warn(
+            `Socket auth failed - INVALID token for ${socket.id}. Error: ${error.message}`
+          );
+        } else {
+          logger.error(`Socket authentication error for ${socket.id}:`, error);
+        }
         next(new Error("Invalid or expired token"));
       }
     });
@@ -236,7 +246,20 @@ export class SocketService {
       });
 
       socket.on("disconnect", (reason) => {
-        logger.info(`User ${userId} disconnected socket ${socket.id}, reason: ${reason}`);
+        // Detailed disconnect reason logging
+        const disconnectReasons: Record<string, string> = {
+          "io server disconnect":
+            "Server forcefully disconnected (token invalid or server called disconnect())",
+          "io client disconnect": "Client called socket.disconnect()",
+          "ping timeout": "Client didn't respond to ping within timeout period",
+          "transport close": "Connection was closed (user closed tab, lost network, etc.)",
+          "transport error": "Connection encountered an error (network issue)",
+          "parse error": "Server received invalid packet from client",
+        };
+        const explanation = disconnectReasons[reason] || "Unknown reason";
+        logger.info(
+          `User ${userId} disconnected socket ${socket.id}, reason: ${reason} (${explanation})`
+        );
         const userSocketSet = this.userSockets.get(userId);
         if (userSocketSet) {
           userSocketSet.delete(socket.id);
