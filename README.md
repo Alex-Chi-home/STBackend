@@ -1,222 +1,121 @@
 # Simple Telegram Backend
 
-## ⚡ Новое: WebSocket поддержка!
+A REST API backend for a messaging application built with Node.js, Express, TypeScript, and MySQL.
 
-✅ **Socket.IO интегрирован!** Real-time сообщения, typing indicators, и многое другое!
+## Prerequisites
 
-📖 **Быстрый старт:** [WEBSOCKET_CHEATSHEET.md](./WEBSOCKET_CHEATSHEET.md)
-🧪 **Тестирование:** [POSTMAN_WEBSOCKET_TESTING.md](./POSTMAN_WEBSOCKET_TESTING.md)
-📚 **Полная документация:** [api/WEBSOCKET_GUIDE.md](./api/WEBSOCKET_GUIDE.md)
+Before you begin, make sure you have the following installed:
 
----
+- **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
+- **Docker** and **Docker Compose** - [Download](https://www.docker.com/products/docker-desktop/)
+- **Git** - [Download](https://git-scm.com/)
 
-## 🚀 Быстрый старт
+## Installation
 
-### Режим разработки с автоматическим обновлением
+1. **Clone the repository:**
 
-#### 1. **Docker Compose Watch **
+   ```bash
+   git clone <repository-url>
+   cd STBackend
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   cd api
+   npm install
+   cd ..
+   ```
+
+## Configuration
+
+1. **Create your environment file:**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Edit the `.env` file** with your own values:
+
+   ```env
+   # Server Configuration
+   NODE_ENV=development
+   PORT=5555
+
+   # Database Configuration
+   MYSQL_HOST=mysqlDatabase
+   MYSQL_PORT=3306
+   MYSQL_USER=root
+   MYSQL_ROOT_PASSWORD=your_password_here
+   DATABASE_NAME=simple_telegram
+
+   # JWT Configuration
+   JWT_SECRET=your_secret_key_at_least_32_characters
+
+   # Frontend Configuration
+   FRONTEND_URL=http://localhost:3000
+   ```
+
+   > **Note:** Replace `your_password_here` and `your_secret_key_at_least_32_characters` with your own secure values.
+
+## Running the Application
+
+### Using Docker (Recommended)
+
+Start all services (API, MySQL database, and Adminer):
 
 ```bash
-docker compose -f docker-compose.dev.yml watch
+docker compose -f docker-compose.dev.yml up --build
 ```
 
-#### 2. **Обычный режим разработки**
+This will start:
+
+- **API server** at `http://localhost:5555`
+- **MySQL database** on port 3306
+- **Adminer** (database admin tool) at `http://localhost:8080`
+
+To stop all services:
 
 ```bash
-
-docker compose -f docker-compose.dev.yml up
+docker compose -f docker-compose.dev.yml down
 ```
 
-## Adminer - подключение к БД
+### Running API Locally (without Docker)
 
-1. Откройте http://localhost:8080
-2. Заполните форму:
-   - **Сервер**: `mysqlDatabase`
-   - **Пользователь**: `root`
-   - **Пароль**: из `.env` → `MYSQL_ROOT_PASSWORD`
-   - **База данных**: из `.env` → `DATABASE_NAME`
+If you prefer to run only the API locally (you'll need a running MySQL instance):
 
-#### 3. **Production режим**
+1. Update your `.env` file with your local MySQL connection details
+2. Run the development server:
+   ```bash
+   cd api
+   npm run dev
+   ```
 
-````bash
+## Project Structure
 
-docker compose up -d
-
-API Endpoints
-
-POST /api/auth/register: Register a new user.
-POST /api/auth/login: Log in and get a JWT token.
-POST /api/chats/private: Create a private chat (requires authentication).
-POST /api/chats/group: Create a group chat (requires authentication).
-GET /api/chats: Get user's chats (requires authentication).
-POST /api/messages: Send a message (requires authentication).
-GET /api/messages/:chatId: Get messages for a chat (requires authentication).
-POST /api/relationships: Add a relationship (friend, follower, blocked) (requires authentication).
-GET /api/relationships: Get user's relationships (requires authentication).
-
-Environment Variables
-
-DATABASE_HOST: MySQL host
-DATABASE_PORT: MySQL port
-DATABASE_USER: MySQL username
-DATABASE_PASSWORD: MySQL password
-DATABASE_NAME: MySQL database name
-JWT_SECRET: Secret for JWT signing
-PORT: Server port
-
-Notes
-
-Set synchronize: false in database.ts for production and use TypeORM migrations.
-Ensure passwords are hashed before storage.
-Use HTTPS in production for secure communication.
-
-
-### Docker (рекомендуется)
-
-```bash
-# Запустить все сервисы
-docker-compose up -d
-
-# Проверить статус
-docker-compose ps
-
-# Просмотреть логи
-docker-compose logs -f api
-````
-
-## 🌐 Деплой
-
-### Быстрый деплой на удаленный сервер
-
-Полное руководство по деплою находится в [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
-
-**Краткие шаги:**
-
-1. Подготовить сервер (Docker, Docker Compose)
-2. Клонировать репозиторий
-3. Создать .env файл с production переменными
-4. Настроить HTTPS (Let's Encrypt)
-5. Настроить Nginx как обратный прокси
-6. Запустить `docker-compose up -d`
-
-### Проверка перед деплоем
-
-Используйте [PRE_DEPLOYMENT_CHECKLIST.md](./PRE_DEPLOYMENT_CHECKLIST.md) для проверки всех требований.
-
-## 🔒 Безопасность
-
-Все критические проблемы безопасности исправлены:
-
-- ✅ Удалены hardcoded пароли
-- ✅ Переменные окружения в .env файле
-- ✅ HTTPS обязателен в production
-- ✅ Отключен Adminer в production
-- ✅ Health checks настроены
-- ✅ Rate limiting включен
-
-Дополнительные рекомендации в [SECURITY_RECOMMENDATIONS.md](./SECURITY_RECOMMENDATIONS.md)
-
-## 📚 API Endpoints
-
-### Аутентификация
-
-- `POST /api/auth/register` - Регистрация пользователя
-- `POST /api/auth/login` - Вход в систему
-- `GET /api/auth/health` - Проверка здоровья приложения
-
-### Чаты
-
-- `POST /api/chats/private` - Создать приватный чат *(отправляет WebSocket событие `chat:new`)*
-- `POST /api/chats/group` - Создать групповой чат *(отправляет WebSocket событие `chat:new`)*
-- `GET /api/chats` - Получить чаты пользователя
-- `DELETE /api/chats/:id` - Удалить чат *(отправляет WebSocket событие `chat:deleted`)*
-
-### Сообщения
-
-- `POST /api/messages` - Отправить сообщение *(отправляет WebSocket событие `message:new`)*
-- `GET /api/messages/:chatId` - Получить сообщения чата
-- `DELETE /api/messages` - Удалить сообщение *(отправляет WebSocket событие `message:deleted`)*
-
-### Отношения
-
-- `POST /api/relationships` - Добавить отношение
-- `GET /api/relationships` - Получить отношения пользователя
-
-### 🔌 WebSocket Events
-
-**Клиент → Сервер:**
-- `join:chat` - Присоединиться к чату
-- `leave:chat` - Покинуть чат
-- `typing:start` - Начал печатать
-- `typing:stop` - Перестал печатать
-- `message:read` - Пометить сообщение как прочитанное
-
-**Сервер → Клиент:**
-- `message:new` - Новое сообщение
-- `message:deleted` - Сообщение удалено
-- `chat:new` - Новый чат создан
-- `chat:deleted` - Чат удален
-- `user:typing` - Пользователь печатает
-- `user:stopped-typing` - Пользователь перестал печатать
-- `message:read-status` - Статус прочтения изменен
-
-## 📖 Документация
-
-- [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Полное руководство по деплою
-- [PRE_DEPLOYMENT_CHECKLIST.md](./PRE_DEPLOYMENT_CHECKLIST.md) - Чек-лист перед деплоем
-- [SECURITY_RECOMMENDATIONS.md](./SECURITY_RECOMMENDATIONS.md) - Рекомендации по безопасности
-- [api/README.md](./api/README.md) - Документация API
-
-## 🧪 Тестирование
-
-Используйте Postman коллекцию: `STBackend_API_Tests.postman_collection.json`
-
-```bash
-# Или используйте curl
-curl -X POST http://localhost:5555/api/auth/health
+```
+STBackend/
+├── api/                      # Main API application
+│   ├── src/
+│   │   ├── config/           # Database and app configuration
+│   │   ├── controllers/      # Request handlers
+│   │   ├── middleware/       # Express middleware (auth, validation)
+│   │   ├── models/           # TypeORM entity models
+│   │   ├── routes/           # API route definitions
+│   │   ├── services/         # Business logic
+│   │   ├── types/            # TypeScript type definitions
+│   │   ├── app.ts            # Express app setup
+│   │   └── server.ts         # Server entry point
+│   ├── package.json
+│   └── tsconfig.json
+├── docker-compose.dev.yml    # Development Docker configuration
+├── docker-compose.yml        # Production Docker configuration
+└── .env.example              # Environment variables template
 ```
 
-## 📊 Переменные окружения
+## API Health Check
 
-Все переменные окружения описаны в [api/.env.example](./api/.env.example)
-
-**Важные переменные для production:**
-
-- `NODE_ENV=production`
-- `MYSQL_PASSWORD` - минимум 32 символа
-- `JWT_SECRET` - минимум 32 символа
-- `FRONTEND_URL` - URL вашего фронтенда
-
-## 🐛 Решение проблем
-
-### Приложение не запускается
+Once running, verify the API is working:
 
 ```bash
-docker-compose logs api
+curl http://localhost:5555/api/auth/health
 ```
-
-### Проблемы с базой данных
-
-```bash
-docker-compose logs mysqlDatabase
-docker-compose restart mysqlDatabase
-```
-
-### Очистить все и начать заново
-
-```bash
-docker-compose down -v
-docker-compose up -d
-```
-
-## 📞 Поддержка
-
-При возникновении проблем:
-
-1. Проверьте логи: `docker-compose logs -f api`
-2. Проверьте health endpoint: `curl http://localhost:5555/api/auth/health`
-3. Обратитесь к документации в папке проекта
-
-## 📄 Лицензия
-
-MIT
