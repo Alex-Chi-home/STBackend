@@ -24,7 +24,7 @@ Before you begin, make sure you have the following installed:
 1. **Create your environment file:**
 
    ```bash
-   cp .env.dev.example .env.development
+   cp .env.dev.example .env
    ```
 
 ## Running the Application
