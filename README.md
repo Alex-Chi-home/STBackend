@@ -55,7 +55,7 @@ Before you begin, make sure you have the following installed:
    FRONTEND_URL=http://localhost:3000
    ```
 
-   > **Note:** Replace `your_password_here` and `your_secret_key_at_least_32_characters` with your own secure values.
+   >
 
 ## Running the Application
 
@@ -78,17 +78,6 @@ To stop all services:
 ```bash
 docker compose -f docker-compose.dev.yml down
 ```
-
-### Running API Locally (without Docker)
-
-If you prefer to run only the API locally (you'll need a running MySQL instance):
-
-1. Update your `.env` file with your local MySQL connection details
-2. Run the development server:
-   ```bash
-   cd api
-   npm run dev
-   ```
 
 ## Project Structure
 
