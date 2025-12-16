@@ -24,31 +24,8 @@ Before you begin, make sure you have the following installed:
 1. **Create your environment file:**
 
    ```bash
-   cp .env.dev.example .env
+   cp .env.dev.example .env.development
    ```
-
-2. **Edit the `.env` file** with your own values:
-
-   ```env
-   # Server Configuration
-   NODE_ENV=development
-   PORT=5555
-
-   # Database Configuration
-   MYSQL_HOST=mysqlDatabase
-   MYSQL_PORT=3306
-   MYSQL_USER=root
-   MYSQL_ROOT_PASSWORD=your_password_here
-   DATABASE_NAME=simple_telegram
-
-   # JWT Configuration
-   JWT_SECRET=your_secret_key_at_least_32_characters
-
-   # Frontend Configuration
-   FRONTEND_URL=http://localhost:3000
-   ```
-
-   >
 
 ## Running the Application
 

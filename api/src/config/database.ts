@@ -11,7 +11,7 @@ export const AppDataSource = new DataSource({
   host: process.env.MYSQL_HOST,
   port: parseInt(process.env.MYSQL_PORT || "3306"),
   username: process.env.MYSQL_USER || "root",
-  password: process.env.MYSQL_PASSWORD,
+  password: process.env.MYSQL_ROOT_PASSWORD,
   database: process.env.DATABASE_NAME,
   entities: [User, Chat, ChatMember, Message, UserRelationship, MessageStatus],
   synchronize: true,
