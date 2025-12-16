@@ -15,6 +15,7 @@ export class MessageController {
         const socketService = getSocketService();
         socketService.emitNewMessage(chatId, message);
       } catch (socketError) {
+        // eslint-disable-next-line no-console
         console.error("Failed to emit message via WebSocket:", socketError);
       }
 

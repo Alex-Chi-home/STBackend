@@ -19,19 +19,12 @@ Before you begin, make sure you have the following installed:
    cd STBackend
    ```
 
-2. **Install dependencies:**
-   ```bash
-   cd api
-   npm install
-   cd ..
-   ```
-
 ## Configuration
 
 1. **Create your environment file:**
 
    ```bash
-   cp .env.example .env
+   cp .env.dev.example .env
    ```
 
 2. **Edit the `.env` file** with your own values:
